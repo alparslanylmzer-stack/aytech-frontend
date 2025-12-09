@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AY-TECH Arıza Kodu Asistanı</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <h1>AY-TECH Arıza Kodu Asistanı</h1>
+
+        <label>Marka:</label>
+        <select id="brand"></select>
+
+        <label>Model:</label>
+        <select id="model"></select>
+
+        <label>Yıl:</label>
+        <select id="year"></select>
+
+        <label>Arıza Kodu:</label>
+        <input id="code" placeholder="P0300 / U0100" />
+
+        <div class="btn-group">
+            <button onclick="getExplain()">Açıklama</button>
+            <button onclick="getFix()">Çözüm</button>
+            <button onclick="getVideo()">Video</button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+<script src="script.js"></script>
+</body>
+</html>
