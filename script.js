@@ -1,5 +1,4 @@
-const API_BASE = "https://aytech-backend.onrender.com"; 
-// ← backend Render linkin burada olacak
+const API_BASE = "https://aytech-backend.onrender.com";
 
 // MARKA / MODEL / YIL LİSTESİ
 const brands = {
@@ -33,39 +32,59 @@ const brands = {
   "Other":["Other Model"]
 };
 
-// UI kurulumu
+// UI
 const brandEl = document.getElementById("brand");
 const modelEl = document.getElementById("model");
 const yearEl = document.getElementById("year");
 const codeEl = document.getElementById("code");
-const result = document.getElementById("result");
 
-// MARKA LİSTELE
+// ÇIKTI KUTULARI
+const explainBox = document.getElementById("explain");
+const reasonsBox = document.getElementById("reasons");
+const fixBox = document.getElementById("fix");
+const mediaBox = document.getElementById("media");
+
+// BAŞLANGIÇ MARKA LİSTESİ
 function init() {
-    brandEl.innerHTML = '<option value="">Seç</option>';
-    Object.keys(brands).forEach(b => {
+    brandEl.innerHTML = "<option value=''>Marka seç</option>";
+    Object.keys(brands).forEach(b=> {
         brandEl.innerHTML += `<option>${b}</option>`;
     });
 }
 init();
 
-// MODEL
+// MODEL CHANGE
 brandEl.onchange = () => {
-    modelEl.innerHTML = "";
+    modelEl.innerHTML = "<option value=''>Model seç</option>";
+    yearEl.innerHTML = "<option value=''>Yıl seç</option>";
+
     const list = brands[brandEl.value] || [];
     list.forEach(m => modelEl.innerHTML += `<option>${m}</option>`);
+
+    clearOutputs();
 };
 
-// YIL
+// YEAR CHANGE
 modelEl.onchange = () => {
-    yearEl.innerHTML = "";
+    yearEl.innerHTML = "<option value=''>Yıl seç</option>";
     for (let y = 2025; y >= 2000; y--) {
         yearEl.innerHTML += `<option>${y}</option>`;
     }
+    clearOutputs();
 };
 
-// ===== BACKEND İSTEKLERİ =====
-async function ask(type) {
+// CLEAR OUTPUTS
+function clearOutputs(){
+    explainBox.textContent = "—";
+    reasonsBox.textContent = "—";
+    fixBox.textContent = "—";
+    mediaBox.textContent = "—";
+}
+
+codeEl.oninput = clearOutputs;
+
+// BACKEND İSTEK
+async function ask(type){
     const body = {
         brand: brandEl.value,
         model: modelEl.value,
@@ -74,16 +93,34 @@ async function ask(type) {
         type
     };
 
-    const r = await fetch(API_BASE + "/ask", {
+    const res = await fetch(API_BASE + "/ask",{
         method: "POST",
         headers: {"Content-Type":"application/json"},
         body: JSON.stringify(body)
     });
 
-    const data = await r.json();
-    result.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    const data = await res.json();
+
+    // TİPE GÖRE KUTUYA YAZ
+    if(type === "desc"){
+        explainBox.textContent = data.aciklama || "—";
+        reasonsBox.textContent = (data.nedenler || []).join("\n") || "—";
+    }
+    if(type === "fix"){
+        fixBox.textContent = (data.cozum || []).join("\n") || "—";
+    }
+    if(type === "video"){
+        if(!data.videolar || data.videolar.length === 0){
+            mediaBox.textContent = "Bu arıza kodu için video bulunamadı.";
+        } else {
+            mediaBox.innerHTML = data.videolar.map(v => {
+                return `• <a href="${v.url}" target="_blank">${v.title}</a>\n(Kaynak: ${v.source})`;
+            }).join("<br><br>");
+        }
+    }
 }
 
+// BUTONLAR
 function getExplain(){ ask("desc"); }
 function getFix(){ ask("fix"); }
 function getVideo(){ ask("video"); }
