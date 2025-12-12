@@ -1,4 +1,4 @@
-const API_BASE = "https://aytech-backend.onrender.com";
+const API_BASE = "https://aytech-backend.onrender.com/api";
 
 // MARKA / MODEL / YIL LİSTESİ
 const brands = {
@@ -140,4 +140,5 @@ async function ask(type) {
 function getExplain(){ ask("desc"); }
 function getFix(){ ask("fix"); }
 function getVideo(){ ask("video"); }
+
 
