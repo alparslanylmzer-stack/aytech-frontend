@@ -84,7 +84,7 @@ function clearOutputs(){
 codeEl.oninput = clearOutputs;
 
 // BACKEND İSTEK
-async function ask(type){
+async function ask(type) {
     const body = {
         brand: brandEl.value,
         model: modelEl.value,
@@ -93,34 +93,51 @@ async function ask(type){
         type
     };
 
-    const res = await fetch(API_BASE + "/ask",{
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify(body)
-    });
+    try {
+        const r = await fetch(API_BASE + "/ask", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body)
+        });
 
-    const data = await res.json();
+        if (!r.ok) {
+            result.innerHTML = `<b>Sunucu hatası:</b> ${r.status} - ${r.statusText}`;
+            return;
+        }
 
-    // TİPE GÖRE KUTUYA YAZ
-    if(type === "desc"){
-        explainBox.textContent = data.aciklama || "—";
-        reasonsBox.textContent = (data.nedenler || []).join("\n") || "—";
-    }
-    if(type === "fix"){
-        fixBox.textContent = (data.cozum || []).join("\n") || "—";
-    }
-    if(type === "video"){
-        if(!data.videolar || data.videolar.length === 0){
-            mediaBox.textContent = "Bu arıza kodu için video bulunamadı.";
-        } else {
-            mediaBox.innerHTML = data.videolar.map(v => {
-                return `• <a href="${v.url}" target="_blank">${v.title}</a>\n(Kaynak: ${v.source})`;
-            }).join("<br><br>");
+        const data = await r.json();
+
+        if (type === "desc") {
+            explainBox.textContent = data.aciklama || "—";
+            reasonsBox.textContent = (data.nedenler || []).join("\n") || "—";
+        }
+
+        if (type === "fix") {
+            fixBox.textContent = (data.cozum || []).join("\n") || "—";
+        }
+
+        if (type === "video") {
+            if (!data.videolar || data.videolar.length === 0) {
+                mediaBox.textContent = "Bu arıza kodu için video bulunamadı.";
+            } else {
+                mediaBox.innerHTML = data.videolar.map(v => {
+                    const url = v.url ? `<a href="${v.url}" target="_blank">${v.title}</a>` : v.title;
+                    return `• ${url}<br><span style="color:#9fbdbb;font-size:13px">Kaynak: ${v.source}</span>`;
+                }).join("<br><br>");
+            }
         }
     }
+    catch (err) {
+        result.innerHTML = `<b>Bağlantı hatası:</b> ${err}`;
+    }
+}
+
 }
 
 // BUTONLAR
 function getExplain(){ ask("desc"); }
 function getFix(){ ask("fix"); }
 function getVideo(){ ask("video"); }
+
